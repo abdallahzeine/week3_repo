@@ -9,7 +9,16 @@ load_dotenv()
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("POSTGRES_URI")
+# Prefer full URI if provided; otherwise compose it from Postgres env vars.
+
+db_user = os.getenv("POSTGRES_USER", "postgres")
+db_password = os.getenv("POSTGRES_PASSWORD", "postgres")
+db_host = os.getenv("POSTGRES_HOST", "localhost")
+db_port = os.getenv("POSTGRES_PORT", "5432")
+db_name = os.getenv("POSTGRES_DB", "taskdb")
+db_uri = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+
+app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -87,4 +96,4 @@ def AI_insights():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
